@@ -1,6 +1,7 @@
 const { BadRequestError } = require("../expressError");
 
 // THIS NEEDS SOME GREAT DOCUMENTATION.
+/** returns data that converts a js object into sql queries by stringifying the values and attaching them to the appropriate sql variable using the structure that the jsToSql provides */
 
 function sqlForPartialUpdate(dataToUpdate, jsToSql) {
   const keys = Object.keys(dataToUpdate);

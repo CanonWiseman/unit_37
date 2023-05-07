@@ -1,7 +1,7 @@
 "use strict";
 
 const db = require("../db");
-const { BadRequestError, NotFoundError } = require("../expressError");
+const { BadRequestError, NotFoundError, ExpressError } = require("../expressError");
 const { sqlForPartialUpdate } = require("../helpers/sql");
 
 /** Related functions for companies. */
@@ -47,9 +47,46 @@ class Company {
   /** Find all companies.
    *
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
+   * 
+   * FILTER: The request handler packs the query variables into an object and sends it to the findAll function
+   * The for loop goes through the object and builds an appropriate SQL statement to insert into the statement
+   * The insert will always happen but the insert will be blank if nothing is passed into the filtering object so no SQL will be interupted
    * */
 
-  static async findAll() {
+
+  static async findAll(filter = {}) {
+    let filterStatement = "";
+    let sqlVariables = [];
+
+    let index = 1;
+    for (const [key, value] of Object.entries(filter)) {
+      if(key != "name" && key != "minEmployees" && key != "maxEmployees"){
+        return new BadRequestError("Query Variables invalid", 400);
+      }
+        
+      if(filterStatement != "" && value){
+        filterStatement += " AND "; 
+      }
+      else if(filterStatement == "" && value){
+        filterStatement = "WHERE ";
+      }
+
+      if(key == "name" && value){
+        filterStatement += `LOWER(name) LIKE $${index}`;
+        const nameFilter = `%${value.toLowerCase()}%`
+        sqlVariables.push(nameFilter);
+      }
+      else if (key == "minEmployees" && value){
+        filterStatement += `num_employees >= $${index}`;
+        sqlVariables.push(value);
+      }
+      else if (key == "maxEmployees" && value){
+        filterStatement += `num_employees <= $${index}`;
+        sqlVariables.push(value);
+      }
+      index ++;
+    }
+
     const companiesRes = await db.query(
           `SELECT handle,
                   name,
@@ -57,7 +94,9 @@ class Company {
                   num_employees AS "numEmployees",
                   logo_url AS "logoUrl"
            FROM companies
-           ORDER BY name`);
+           ${filterStatement}
+           ORDER BY name`, sqlVariables);
+
     return companiesRes.rows;
   }
 

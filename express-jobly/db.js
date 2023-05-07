@@ -2,19 +2,20 @@
 /** Database setup for jobly. */
 const { Client } = require("pg");
 const { getDatabaseUri } = require("./config");
+const key = require("./secret");
 
 let db;
 
 if (process.env.NODE_ENV === "production") {
   db = new Client({
-    connectionString: getDatabaseUri(),
+    connectionString: "postgres://postgres:" + key + "@localhost:5432/jobly",
     ssl: {
       rejectUnauthorized: false
     }
   });
 } else {
   db = new Client({
-    connectionString: getDatabaseUri()
+    connectionString: "postgres://postgres:" + key + "@localhost:5432/jobly_test"
   });
 }
 
