@@ -1,0 +1,35 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "$id": "http://our.job.com/jobNew.schema.json",
+    "type": "object",
+    "required": [
+        "title",
+        "company_handle"
+    ],
+    "properties": {
+        "title": {
+            "type": "string",
+            "default": "",
+            "minLength": 1,
+            "title": "The title Schema"
+        },
+        "salary": {
+            "type": "integer",
+            "minimum": 0,
+            "title": "The salary Schema"
+        },
+        "equity": {
+            "type": "number",
+            "maximum": 1.0,
+            "title": "The equity Schema"
+        },
+        "company_handle": {
+            "type": "string",
+            "default": "",
+            "minLength": 1,
+            "maxLength": 25,
+            "title": "The company_handle Schema"
+        }
+    },
+    "additionalProperties": false
+}

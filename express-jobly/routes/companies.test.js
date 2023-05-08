@@ -11,7 +11,7 @@ const {
   commonAfterEach,
   commonAfterAll,
   u1Token,
-  u2Token,
+  u2Token
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);

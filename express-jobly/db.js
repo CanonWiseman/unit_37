@@ -15,7 +15,7 @@ if (process.env.NODE_ENV === "production") {
   });
 } else {
   db = new Client({
-    connectionString: "postgres://postgres:" + key + "@localhost:5432/jobly_test"
+    connectionString: "postgres://postgres:" + key + "@localhost:5432/jobly"
   });
 }
 

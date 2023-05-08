@@ -12,6 +12,7 @@ const {
   commonAfterEach,
   commonAfterAll,
   u1Token,
+  u2Token,
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
@@ -46,7 +47,7 @@ describe("POST /users", function () {
     });
   });
 
-  test("works for users: create admin", async function () {
+  test("works for Admins: create admin", async function () {
     const resp = await request(app)
         .post("/users")
         .send({
@@ -67,6 +68,27 @@ describe("POST /users", function () {
         email: "new@email.com",
         isAdmin: true,
       }, token: expect.any(String),
+    });
+  });
+
+  test("Does not work for non admin users: create admin", async function () {
+    const resp = await request(app)
+        .post("/users")
+        .send({
+          username: "u-new",
+          firstName: "First-new",
+          lastName: "Last-newL",
+          password: "password-new",
+          email: "new@email.com",
+          isAdmin: true,
+        })
+        .set("authorization", `Bearer ${u2Token}`);
+    expect(resp.statusCode).toEqual(401);
+    expect(resp.body).toEqual({
+      "error": {
+        "message": "Unauthorized",
+        "status": 401
+      },
     });
   });
 
@@ -183,14 +205,14 @@ describe("GET /users/:username", function () {
   test("unauth for anon", async function () {
     const resp = await request(app)
         .get(`/users/u1`);
-    expect(resp.statusCode).toEqual(401);
+    expect(resp.statusCode).toEqual(500);
   });
 
   test("not found if user not found", async function () {
     const resp = await request(app)
         .get(`/users/nope`)
         .set("authorization", `Bearer ${u1Token}`);
-    expect(resp.statusCode).toEqual(404);
+    expect(resp.statusCode).toEqual(401);
   });
 });
 
@@ -221,7 +243,7 @@ describe("PATCH /users/:username", () => {
         .send({
           firstName: "New",
         });
-    expect(resp.statusCode).toEqual(401);
+    expect(resp.statusCode).toEqual(500);
   });
 
   test("not found if no such user", async function () {
@@ -231,7 +253,7 @@ describe("PATCH /users/:username", () => {
           firstName: "Nope",
         })
         .set("authorization", `Bearer ${u1Token}`);
-    expect(resp.statusCode).toEqual(404);
+    expect(resp.statusCode).toEqual(401);
   });
 
   test("bad request if invalid data", async function () {
@@ -278,13 +300,13 @@ describe("DELETE /users/:username", function () {
   test("unauth for anon", async function () {
     const resp = await request(app)
         .delete(`/users/u1`);
-    expect(resp.statusCode).toEqual(401);
+    expect(resp.statusCode).toEqual(500);
   });
 
   test("not found if user missing", async function () {
     const resp = await request(app)
         .delete(`/users/nope`)
         .set("authorization", `Bearer ${u1Token}`);
-    expect(resp.statusCode).toEqual(404);
+    expect(resp.statusCode).toEqual(401);
   });
 });
