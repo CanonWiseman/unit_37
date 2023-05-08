@@ -11,6 +11,7 @@ const User = require("../models/user");
 const { createToken } = require("../helpers/tokens");
 const userNewSchema = require("../schemas/userNew.json");
 const userUpdateSchema = require("../schemas/userUpdate.json");
+const applicationSchema = require("../schemas/applicationNew.json");
 
 const router = express.Router();
 
@@ -68,7 +69,7 @@ router.get("/", ensureAdmin, async function (req, res, next) {
  * Authorization required: Admin or User
  **/
 
-router.get("/:username", ensureAdminOrUser, async function (req, res, next) {
+router.get("/:username", async function (req, res, next) {
   try {
     const user = await User.get(req.params.username);
     return res.json({ user });
@@ -115,6 +116,27 @@ router.delete("/:username", ensureAdminOrUser, async function (req, res, next) {
     return res.json({ deleted: req.params.username });
   } catch (err) {
     return next(err);
+  }
+});
+
+router.post("/:username/jobs/:job_id", ensureAdminOrUser, async function (req, res, next){
+  try{
+    const username = req.params.username;
+    const job_id = parseInt(req.params.job_id)
+
+    const validator = jsonschema.validate({username: username, job_id: job_id }, applicationSchema);
+    if (!validator.valid) {
+      const errs = validator.errors.map(e => e.stack);
+      throw new BadRequestError(errs);
+    }
+
+    const application = await User.apply(username, job_id);
+    
+
+    return res.status(201).json({ application });
+  }
+  catch(e){
+    return next(e);
   }
 });
 
